@@ -38,11 +38,24 @@ npm run ops:restore -- data/backups/runtime_db_YYYYMMDDTHHMMSSZ.json
 npm run smoke:api
 ```
 
-## 6. CD 동작
+## 6. UI 실행
+개발 모드:
+```bash
+npm run ui:dev
+```
+
+빌드:
+```bash
+npm run ui:build
+```
+
+정적 파일은 `ui/dist`에 생성되며, API 서버(`start:api`)가 동일 프로세스에서 서빙한다.
+
+## 7. CD 동작
 - `main` push 시 `.github/workflows/cd.yml`이 `scripts/deploy.sh`를 실행한다.
 - 산출 로그는 `artifacts/cd.log`에 저장된다.
 
-## 7. 장애 기본 대응
+## 8. 장애 기본 대응
 1. `npm run test:api`로 API 상태 재검증
 2. `RUNTIME_DB_PATH` 존재 여부 확인
 3. 필요시 백업본으로 `ops:restore` 수행
