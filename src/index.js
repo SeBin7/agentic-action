@@ -238,6 +238,7 @@ export async function runPipeline({
       score: scoreResult.score,
       threshold: env.alertThreshold,
       cooldownHours: env.alertCooldownHours,
+      minScoreDelta: env.alertMinScoreDelta,
       nowIso: windowEnd
     });
 

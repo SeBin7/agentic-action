@@ -312,7 +312,15 @@ export class RuntimeRepository {
     return this.statements.getLatestAlert.get(repoId, sentTo) || null;
   }
 
-  shouldSendAlert({ repoId, sentTo, score, threshold, cooldownHours, nowIso }) {
+  shouldSendAlert({
+    repoId,
+    sentTo,
+    score,
+    threshold,
+    cooldownHours,
+    minScoreDelta = 0,
+    nowIso
+  }) {
     if (score < threshold) {
       return {
         shouldSend: false,
@@ -335,8 +343,18 @@ export class RuntimeRepository {
     const now = toEpoch(nowIso);
     const lastSent = toEpoch(lastAlert.sent_at);
     const cooldownMs = cooldownHours * 60 * 60 * 1000;
+    const lastAlertScore = Number(lastAlert.score) || 0;
 
     if (now - lastSent >= cooldownMs) {
+      if (score - lastAlertScore < minScoreDelta) {
+        return {
+          shouldSend: false,
+          critical: false,
+          reason: 'score_delta_too_small',
+          lastAlert
+        };
+      }
+
       return {
         shouldSend: true,
         critical: false,
@@ -345,7 +363,7 @@ export class RuntimeRepository {
       };
     }
 
-    if (score >= lastAlert.score * 2) {
+    if (score >= lastAlertScore * 2) {
       return {
         shouldSend: true,
         critical: true,

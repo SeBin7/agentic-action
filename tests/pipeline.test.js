@@ -41,6 +41,7 @@ test('cooldown blocks alert unless score doubles', () => {
     score: 13,
     threshold: 12,
     cooldownHours: 24,
+    minScoreDelta: 0.5,
     nowIso: '2026-02-23T12:00:00.000Z'
   });
   assert.equal(regularDecision.shouldSend, false);
@@ -52,10 +53,23 @@ test('cooldown blocks alert unless score doubles', () => {
     score: 24,
     threshold: 12,
     cooldownHours: 24,
+    minScoreDelta: 0.5,
     nowIso: '2026-02-23T12:00:00.000Z'
   });
   assert.equal(criticalDecision.shouldSend, true);
   assert.equal(criticalDecision.reason, 'critical_override');
+
+  const smallDeltaDecision = repo.shouldSendAlert({
+    repoId: 'openai/openai-node',
+    sentTo: 'discord',
+    score: 12.3,
+    threshold: 12,
+    cooldownHours: 24,
+    minScoreDelta: 0.5,
+    nowIso: '2026-02-24T01:00:00.000Z'
+  });
+  assert.equal(smallDeltaDecision.shouldSend, false);
+  assert.equal(smallDeltaDecision.reason, 'score_delta_too_small');
 
   const elapsedDecision = repo.shouldSendAlert({
     repoId: 'openai/openai-node',
@@ -63,6 +77,7 @@ test('cooldown blocks alert unless score doubles', () => {
     score: 13,
     threshold: 12,
     cooldownHours: 24,
+    minScoreDelta: 0.5,
     nowIso: '2026-02-24T01:00:00.000Z'
   });
   assert.equal(elapsedDecision.shouldSend, true);
