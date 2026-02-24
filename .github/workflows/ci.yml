@@ -33,7 +33,11 @@ jobs:
             else
               npm install
             fi
-            npm test 2>&1 | tee artifacts/ci.log
+            {
+              npm test
+              npm run test:api
+              npm run ui:build
+            } 2>&1 | tee artifacts/ci.log
           else
             echo "No Cargo.toml or package.json found. Skipping verify." | tee artifacts/ci.log
           fi

@@ -8,13 +8,21 @@
   },
   "scripts": {
     "start": "node src/index.js",
+    "start:api": "node src/server/index.js",
+    "smoke:api": "node src/server/index.js --smoke",
     "test": "npm run test:*",
+    "test:api": "node --test tests/api.test.js",
     "test:extract": "node --test tests/extract_repo.test.js",
     "test:score": "node --test tests/score.test.js",
     "test:score-rules": "node --test tests/score_rules.test.js",
     "test:pipeline": "node --test tests/pipeline.test.js",
     "test:health": "node --test tests/source_health.test.js",
     "test:sources": "node --test tests/sources_config.test.js",
+    "ui:dev": "npm --prefix ui run dev",
+    "ui:build": "node tools/ui/build_if_present.js",
+    "ui:preview": "npm --prefix ui run preview",
+    "ops:backup": "bash scripts/backup.sh",
+    "ops:restore": "bash scripts/restore.sh",
     "eval:score": "node tools/eval/offline_score_eval.js",
     "test:*": "npm run test:extract && npm run test:score && npm run test:score-rules && npm run test:pipeline && npm run test:health && npm run test:sources && npm run eval:score"
   }
