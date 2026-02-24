@@ -1,0 +1,18 @@
+{
+  "name": "trend-oss-tracker-mvp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "better-sqlite3": "^12.4.1"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test:extract": "node --test tests/extract_repo.test.js",
+    "test:score": "node --test tests/score.test.js",
+    "test:pipeline": "node --test tests/pipeline.test.js",
+    "test:health": "node --test tests/source_health.test.js",
+    "test:sources": "node --test tests/sources_config.test.js",
+    "test:*": "npm run test:extract && npm run test:score && npm run test:pipeline && npm run test:health && npm run test:sources"
+  }
+}

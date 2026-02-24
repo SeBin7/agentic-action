@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust (if Cargo project)
+        if: ${{ hashFiles('Cargo.toml') != '' }}
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Setup Node.js (if Node project)
+        if: ${{ hashFiles('package.json') != '' }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Run verify (capture logs)
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+
+          if [ -f Cargo.toml ]; then
+            cargo test --color never 2>&1 | tee artifacts/ci.log
+          elif [ -f package.json ]; then
+            if [ -f package-lock.json ]; then
+              npm ci
+            else
+              npm install
+            fi
+            npm test 2>&1 | tee artifacts/ci.log
+          else
+            echo "No Cargo.toml or package.json found. Skipping verify." | tee artifacts/ci.log
+          fi
+
+      - name: Save metadata
+        if: always()
+        run: |
+          set -euo pipefail
+          {
+            echo "repo=${GITHUB_REPOSITORY}"
+            echo "sha=${GITHUB_SHA}"
+            echo "ref=${GITHUB_REF}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "run_attempt=${GITHUB_RUN_ATTEMPT}"
+            echo "workflow=${GITHUB_WORKFLOW}"
+            echo "event_name=${GITHUB_EVENT_NAME}"
+          } > artifacts/metadata.env
+
+      - name: Upload artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-artifacts
+          path: artifacts
