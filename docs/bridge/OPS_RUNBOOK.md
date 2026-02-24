@@ -60,6 +60,13 @@ python3 tools/bridge/router.py daemon --interval 2 --workers 4
 - 처리 완료된 원본 work 파일은 `bridge/inprogress/`에서 자동 제거된다.
 - `to: gemini` 성공 시 `bridge/inbox/*_to_codex.work.md` 후속 작업 파일이 생성된다.
 
+## 실사용 체크리스트
+1. healthcheck
+2. submit_work(gemini)
+3. 결과 확인
+4. 실패시 error 확인
+5. PR 생성
+
 ## 5) 테스트용 워커 커맨드 오버라이드 (선택)
 실제 `codex` 대신 지정 커맨드로 워커 동작만 검증하려면 아래 환경변수를 사용한다.
 
