@@ -1,0 +1,31 @@
+name: cd
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*.*.*"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts
+
+          if [ -x "./scripts/deploy.sh" ]; then
+            ./scripts/deploy.sh 2>&1 | tee artifacts/cd.log
+          else
+            echo "No ./scripts/deploy.sh found. Skipping deployment." | tee artifacts/cd.log
+          fi
+
+      - name: Upload deploy artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cd-artifacts
+          path: artifacts
