@@ -41,3 +41,26 @@ python3 tools/bridge/router.py daemon --interval 2 --workers 4
 ```bash
 tools/bridge/pr_submit.sh "feat: bridge update"
 ```
+
+## P2 Dashboard (Read-only)
+
+백엔드 API 실행:
+```bash
+npm run start:api
+```
+
+UI 개발 서버 실행:
+```bash
+npm run ui:dev
+```
+
+프로덕션용 UI 빌드:
+```bash
+npm run ui:build
+```
+
+API 엔드포인트:
+- `/api/health`
+- `/api/repos/top`
+- `/api/alerts`
+- `/api/sources/health`
