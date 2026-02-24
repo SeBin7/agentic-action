@@ -10,6 +10,10 @@ test('score formula v1 matches expected baseline case', () => {
   });
 
   assert.equal(result.score, 16.0);
+  assert.equal(result.components.weightedMentionCount, 2);
+  assert.equal(result.components.mentionScore, 2);
+  assert.equal(result.components.uniqueSourceScore, 10);
+  assert.equal(result.components.tierCPenaltyApplied, false);
 });
 
 test('tier c mentions apply 0.5 penalty', () => {
@@ -21,4 +25,9 @@ test('tier c mentions apply 0.5 penalty', () => {
   });
 
   assert.equal(result.score, 8.0);
+  assert.equal(result.components.weightedMentionCount, 3);
+  assert.equal(result.components.mentionScore, 3);
+  assert.equal(result.components.uniqueSourceScore, 5);
+  assert.equal(result.components.starDeltaScore, 0);
+  assert.equal(result.components.tierCPenaltyApplied, true);
 });

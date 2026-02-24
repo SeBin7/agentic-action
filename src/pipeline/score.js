@@ -21,13 +21,21 @@ export function calculateScoreV1({
   const safeTierC = Math.max(0, tierCMentionCount);
 
   const weightedMentionCount = safeMention - safeTierC + safeTierC * WEIGHTS.tierCPenalty;
-  const rawScore =
-    WEIGHTS.mention * weightedMentionCount +
-    WEIGHTS.uniqueSource * safeUniqueSource +
-    WEIGHTS.starDelta * Math.log10(safeDelta + 1);
+  const mentionScore = WEIGHTS.mention * weightedMentionCount;
+  const uniqueSourceScore = WEIGHTS.uniqueSource * safeUniqueSource;
+  const starDeltaScore = WEIGHTS.starDelta * Math.log10(safeDelta + 1);
+
+  const rawScore = mentionScore + uniqueSourceScore + starDeltaScore;
 
   return {
     rawScore,
-    score: round1(rawScore)
+    score: round1(rawScore),
+    components: {
+      weightedMentionCount,
+      mentionScore,
+      uniqueSourceScore,
+      starDeltaScore,
+      tierCPenaltyApplied: safeTierC > 0
+    }
   };
 }
