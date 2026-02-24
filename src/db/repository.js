@@ -135,6 +135,28 @@ export class RuntimeRepository {
           star_delta = excluded.star_delta,
           score = excluded.score
       `),
+      listTopReposByLatestSnapshotInWindow: this.db.prepare(`
+        SELECT
+          s.repo_id,
+          s.score,
+          s.mention_count,
+          s.unique_source_count,
+          s.star_delta,
+          s.window_end
+        FROM repo_score_snapshots s
+        INNER JOIN (
+          SELECT
+            repo_id,
+            MAX(window_end) AS max_window_end
+          FROM repo_score_snapshots
+          WHERE window_end >= @window_start
+          GROUP BY repo_id
+        ) latest
+          ON latest.repo_id = s.repo_id
+         AND latest.max_window_end = s.window_end
+        ORDER BY s.score DESC, s.mention_count DESC, s.repo_id ASC
+        LIMIT @limit
+      `),
       getLatestAlert: this.db.prepare(`
         SELECT
           id,
@@ -163,6 +185,18 @@ export class RuntimeRepository {
           @sent_at,
           @is_critical
         )
+      `),
+      listRecentAlerts: this.db.prepare(`
+        SELECT
+          id,
+          repo_id,
+          score,
+          sent_to,
+          sent_at,
+          is_critical
+        FROM alerts_sent
+        ORDER BY sent_at DESC, id DESC
+        LIMIT @limit
       `),
       getSourceHealth: this.db.prepare(`
         SELECT
@@ -308,6 +342,14 @@ export class RuntimeRepository {
     this.statements.upsertScoreSnapshot.run(snapshot);
   }
 
+  listTopRepos({ windowStartIso, limit = 20 }) {
+    const safeLimit = Number.isFinite(Number(limit)) ? Math.max(1, Math.min(200, Number(limit))) : 20;
+    return this.statements.listTopReposByLatestSnapshotInWindow.all({
+      window_start: windowStartIso,
+      limit: safeLimit
+    });
+  }
+
   getLatestAlert(repoId, sentTo) {
     return this.statements.getLatestAlert.get(repoId, sentTo) || null;
   }
@@ -410,6 +452,11 @@ export class RuntimeRepository {
       is_critical: isCritical ? 1 : 0
     };
     return alert;
+  }
+
+  listRecentAlerts({ limit = 50 }) {
+    const safeLimit = Number.isFinite(Number(limit)) ? Math.max(1, Math.min(500, Number(limit))) : 50;
+    return this.statements.listRecentAlerts.all({ limit: safeLimit });
   }
 
   getSourceHealth(source) {
