@@ -266,6 +266,7 @@ created_at: 2026-02-23T07:15:00Z
 - `멀티워커/병렬`: `router.py run-once|daemon --workers N` 지원
 - `worktree`: Codex 실행 시 기본 `git worktree` 사용(`BRIDGE_ENABLE_WORKTREE=1`)
 - `원격 PR 생성`: `tools/bridge/pr_submit.sh` 추가(gh 충돌/인증 검사 포함)
+- `실사용 입력`: `tools/bridge/submit_work.py`로 지시문 -> work 생성 -> run-once/wait 연동 지원
 기존 코드(scheduler/run_*.sh/env)와 1:1로 맞춘 패치가 필요하면 해당 파일을 다시 업로드해야 한다.
 
 ---

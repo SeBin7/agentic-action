@@ -59,3 +59,7 @@
 - `codex_assign`: 후속 Codex 작업의 `assign` 오버라이드
 - `codex_timeout_s`: 후속 Codex 작업 `timeout_s` 오버라이드
 - `codex_max_retries`: 후속 Codex 작업 `max_retries` 오버라이드
+
+## 실사용 제출 인터페이스
+수동 파일 작성 대신 아래 도구를 사용 가능:
+- `tools/bridge/submit_work.py --to gemini --thread-id <id> "<지시문>" --run-once --wait`

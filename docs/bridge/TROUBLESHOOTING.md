@@ -72,6 +72,15 @@
 1. `bridge/state/processed_index.json`에서 키 확인
 2. 새 `task_id`로 재발행
 
+## submit_work wait timeout
+증상:
+- `submit_work.py --wait` 실행 시 timeout
+
+대응:
+1. daemon 모드면 라우터가 살아있는지 확인
+2. daemon 미사용이면 `--run-once` 옵션 추가
+3. `bridge/error/*.error.md`에서 동일 thread/task의 actor별 오류 확인
+
 ## worktree_create_failed
 증상:
 - `.error.md` 또는 stderr에 `[worktree] worktree_create_failed:...`

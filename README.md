@@ -25,6 +25,11 @@ python3 tools/bridge/healthcheck.py
 python3 tools/bridge/router.py run-once --workers 2
 ```
 
+실사용 1줄 제출(권장):
+```bash
+tools/bridge/submit_work.py --to gemini --thread-id live "브릿지 상태 점검 후 필요한 코드 개선 지시를 만들어줘" --run-once --wait
+```
+
 3. 데몬 실행
 ```bash
 python3 tools/bridge/router.py daemon --interval 2 --workers 4

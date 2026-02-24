@@ -31,6 +31,11 @@ export BRIDGE_REQUIRE_GEMINI=1
 기본 응답 언어는 한국어다. 영어 응답이 필요하면 frontmatter에 `response_lang: en`을 지정한다.
 `to: gemini`로 넣으면 Gemini가 Codex용 후속 work 파일을 자동 생성한다.
 
+실사용에서는 아래 제출 커맨드를 우선 사용한다:
+```bash
+tools/bridge/submit_work.py --to gemini --thread-id live "요청 문장" --run-once --wait
+```
+
 ## 3) 실행
 단발:
 ```bash
@@ -41,6 +46,10 @@ python3 tools/bridge/router.py run-once --workers 2
 ```bash
 python3 tools/bridge/router.py daemon --interval 2 --workers 4
 ```
+
+`submit_work.py`를 쓸 때의 권장 운영:
+- 배치 모드: daemon 상주시 `--run-once` 없이 submit만 수행
+- 즉시 실행 모드: daemon 없이 `--run-once --wait` 사용
 
 ## 4) 결과 확인
 - 성공: `bridge/done/*.result.md`
