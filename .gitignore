@@ -1,0 +1,23 @@
+node_modules/
+__pycache__/
+*.pyc
+.env
+npm-debug.log*
+data/runtime_db.json
+data/operations.log
+
+# Bridge runtime artifacts
+.runtime/
+bridge/archive/*
+!bridge/archive/.gitkeep
+bridge/inbox/*
+!bridge/inbox/.gitkeep
+bridge/inprogress/*
+!bridge/inprogress/.gitkeep
+bridge/done/*
+!bridge/done/.gitkeep
+bridge/error/*
+!bridge/error/.gitkeep
+bridge/logs/*
+!bridge/logs/.gitkeep
+bridge/state/*.json
