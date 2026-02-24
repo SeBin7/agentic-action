@@ -3,7 +3,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import shutil
+import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -22,6 +24,8 @@ REQUIRED_FRONTMATTER_KEYS = {
     "max_retries",
     "created_at",
 }
+
+ALLOWED_TARGET_AGENTS = {"codex", "gemini"}
 
 
 @dataclass
@@ -43,6 +47,8 @@ class WorkerResult:
     stdout: str
     stderr: str
     raw_stdout: str = ""
+    actor: str = "codex"
+    work_dir: str = ""
 
 
 def now_utc_iso() -> str:
@@ -132,7 +138,8 @@ def render_frontmatter(meta: Dict[str, Any]) -> str:
             rendered = str(value)
         else:
             s = str(value)
-            if any(ch in s for ch in [":", "#"]) or s.strip() != s:
+            # Keep pure-digit strings quoted to preserve identifiers like "0003".
+            if any(ch in s for ch in [":", "#"]) or s.strip() != s or s.isdigit():
                 rendered = json.dumps(s, ensure_ascii=False)
             else:
                 rendered = s
@@ -155,8 +162,9 @@ def validate_work_meta(meta: Dict[str, Any]) -> list[str]:
     if str(meta.get("kind", "")).strip().lower() != "work":
         errors.append("invalid_kind")
 
-    if str(meta.get("to", "")).strip().lower() != "codex":
-        errors.append("invalid_to")
+    to_agent = str(meta.get("to", "")).strip().lower()
+    if to_agent not in ALLOWED_TARGET_AGENTS:
+        errors.append(f"invalid_to:{to_agent}")
 
     for numeric in ("timeout_s", "max_retries"):
         v = meta.get(numeric)
@@ -174,7 +182,8 @@ def parse_work_file(path: Path) -> WorkItem:
 
 
 def thread_task_key(meta: Dict[str, Any]) -> str:
-    return f"{meta.get('thread_id')}::{meta.get('task_id')}"
+    target = str(meta.get("to", "")).strip().lower()
+    return f"{meta.get('thread_id')}::{meta.get('task_id')}::{target}"
 
 
 def _is_truthy(value: str | None, default: bool = False) -> bool:
@@ -233,6 +242,64 @@ def runtime_env(repo_root: Path) -> Dict[str, str]:
         _sync_codex_auth(codex_home, source_home)
 
     return env
+
+
+def slugify(value: object, fallback: str = "x", max_len: int = 48) -> str:
+    s = str(value or "").strip().lower()
+    s = re.sub(r"[^a-z0-9._-]+", "-", s)
+    s = re.sub(r"-{2,}", "-", s).strip("-.")
+    if not s:
+        s = fallback
+    return s[:max_len]
+
+
+def prepare_git_worktree(repo_root: Path, meta: Dict[str, Any]) -> Tuple[Path, str | None]:
+    enabled = _is_truthy(os.environ.get("BRIDGE_ENABLE_WORKTREE"), default=True)
+    if not enabled:
+        return repo_root, None
+
+    git_bin = shutil.which("git")
+    if not git_bin:
+        return repo_root, "git_not_found"
+
+    in_git = subprocess.run(
+        [git_bin, "-C", str(repo_root), "rev-parse", "--is-inside-work-tree"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if in_git.returncode != 0:
+        return repo_root, "not_git_repo"
+
+    base = repo_root / ".runtime" / "worktrees"
+    ensure_dir(base)
+
+    thread = slugify(meta.get("thread_id"), fallback="thread")
+    task = slugify(meta.get("task_id"), fallback="task")
+    assign = slugify(meta.get("assign"), fallback="agent")
+    wt_name = slugify(f"{thread}-{task}-{assign}", fallback="worktree", max_len=90)
+    wt_path = base / wt_name
+    if wt_path.exists():
+        return wt_path, None
+
+    branch = f"bridge/{thread}/{task}/{assign}"
+    has_branch = subprocess.run(
+        [git_bin, "-C", str(repo_root), "show-ref", "--verify", f"refs/heads/{branch}"],
+        capture_output=True,
+        text=True,
+        check=False,
+    ).returncode == 0
+
+    if has_branch:
+        cmd = [git_bin, "-C", str(repo_root), "worktree", "add", str(wt_path), branch]
+    else:
+        cmd = [git_bin, "-C", str(repo_root), "worktree", "add", "-b", branch, str(wt_path), "HEAD"]
+
+    created = subprocess.run(cmd, capture_output=True, text=True, check=False)
+    if created.returncode != 0:
+        err = (created.stderr or created.stdout or "").strip()
+        return repo_root, f"worktree_create_failed:{tail(err, 10)}"
+    return wt_path, None
 
 
 def tail(text: str, max_lines: int = 40) -> str:

@@ -74,6 +74,17 @@ def main() -> int:
     env = os.environ.copy()
     forced_env = runtime_env(root)
     env.update(forced_env)
+    require_gemini = os.environ.get("BRIDGE_REQUIRE_GEMINI", "0").strip().lower() in {"1", "true", "yes", "on"}
+    report["checks"]["worktree_enabled"] = os.environ.get("BRIDGE_ENABLE_WORKTREE", "1")
+    gemini_bin = shutil.which("gemini")
+    report["checks"]["gemini_exists"] = bool(gemini_bin)
+    report["checks"]["gemini_required"] = require_gemini
+    if require_gemini and not gemini_bin:
+        report["reason"] = "gemini_not_found"
+        (state_dir / "health.json").write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print("[health] gemini binary not found")
+        return 1
+
     report["checks"]["runtime_env"] = forced_env
     auth = codex_auth_status(Path(forced_env["CODEX_HOME"]))
     report["checks"]["codex_auth_files"] = auth

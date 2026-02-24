@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Dict
 
-from common import WorkerResult, codex_auth_status
+from common import WorkerResult, codex_auth_status, prepare_git_worktree
 
 PROFILE_PROMPTS = {
     "@직원1": "당신은 아키텍트/리뷰어입니다. 분석 중심으로 진행하고 코드 변경은 최소화하세요.",
@@ -87,6 +87,7 @@ def run_codex_once(
     runtime_env: Dict[str, str],
 ) -> WorkerResult:
     start = time.monotonic()
+    work_dir = repo_root
 
     codex_bin = shutil.which("codex")
     if not codex_bin:
@@ -102,6 +103,8 @@ def run_codex_once(
             stdout="",
             stderr="codex binary not found in PATH",
             raw_stdout="",
+            actor="codex",
+            work_dir=str(work_dir),
         )
 
     env = os.environ.copy()
@@ -111,6 +114,7 @@ def run_codex_once(
     api_key_present = bool(env.get("OPENAI_API_KEY"))
 
     prompt = _build_prompt(meta, body)
+    work_dir, wt_err = prepare_git_worktree(repo_root, meta)
     custom = os.environ.get("BRIDGE_CODEX_CMD", "").strip()
     use_json_stream = not custom
     if use_json_stream and not auth["auth_json"] and not api_key_present:
@@ -126,6 +130,8 @@ def run_codex_once(
             stdout="",
             stderr=f"missing auth for CODEX_HOME={codex_home}. run `codex login` or provide OPENAI_API_KEY.",
             raw_stdout="",
+            actor="codex",
+            work_dir=str(work_dir),
         )
 
     if custom:
@@ -147,7 +153,7 @@ def run_codex_once(
     try:
         proc = subprocess.run(
             cmd,
-            cwd=repo_root,
+            cwd=work_dir,
             env=env,
             text=True,
             capture_output=True,
@@ -169,6 +175,8 @@ def run_codex_once(
             stdout=stdout,
             stderr=stderr,
             raw_stdout=stdout,
+            actor="codex",
+            work_dir=str(work_dir),
         )
     except OSError as exc:
         elapsed = int((time.monotonic() - start) * 1000)
@@ -183,12 +191,16 @@ def run_codex_once(
             stdout="",
             stderr=str(exc),
             raw_stdout="",
+            actor="codex",
+            work_dir=str(work_dir),
         )
 
     elapsed = int((time.monotonic() - start) * 1000)
     raw_stdout = proc.stdout or ""
     stdout = raw_stdout
     stderr = proc.stderr or ""
+    if wt_err:
+        stderr = (stderr + "\n" if stderr else "") + f"[worktree] {wt_err}"
 
     if use_json_stream:
         parsed_msg, stream_errors = _parse_codex_jsonl(raw_stdout)
@@ -205,6 +217,8 @@ def run_codex_once(
                 stdout=stdout,
                 stderr=stderr + ("\n" if stderr and stream_errors else "") + "\n".join(stream_errors),
                 raw_stdout=raw_stdout,
+                actor="codex",
+                work_dir=str(work_dir),
             )
         if any("stream disconnected" in m.lower() for m in stream_errors):
             return WorkerResult(
@@ -218,6 +232,8 @@ def run_codex_once(
                 stdout=stdout,
                 stderr=stderr + ("\n" if stderr and stream_errors else "") + "\n".join(stream_errors),
                 raw_stdout=raw_stdout,
+                actor="codex",
+                work_dir=str(work_dir),
             )
 
     if "stream disconnected" in stderr.lower() or "stream disconnected" in stdout.lower():
@@ -232,6 +248,8 @@ def run_codex_once(
             stdout=stdout,
             stderr=stderr,
             raw_stdout=raw_stdout,
+            actor="codex",
+            work_dir=str(work_dir),
         )
 
     if proc.returncode != 0:
@@ -247,6 +265,8 @@ def run_codex_once(
                 stdout=stdout,
                 stderr=stderr,
                 raw_stdout=raw_stdout,
+                actor="codex",
+                work_dir=str(work_dir),
             )
         return WorkerResult(
             ok=False,
@@ -259,6 +279,8 @@ def run_codex_once(
             stdout=stdout,
             stderr=stderr,
             raw_stdout=raw_stdout,
+            actor="codex",
+            work_dir=str(work_dir),
         )
 
     if not stdout.strip():
@@ -273,6 +295,8 @@ def run_codex_once(
             stdout=stdout,
             stderr=stderr,
             raw_stdout=raw_stdout,
+            actor="codex",
+            work_dir=str(work_dir),
         )
 
     return WorkerResult(
@@ -286,6 +310,8 @@ def run_codex_once(
         stdout=stdout,
         stderr=stderr,
         raw_stdout=raw_stdout,
+        actor="codex",
+        work_dir=str(work_dir),
     )
 
 
