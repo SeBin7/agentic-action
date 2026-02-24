@@ -236,9 +236,12 @@ export async function runPipeline({
       repoId,
       sentTo: 'discord',
       score: scoreResult.score,
+      uniqueSourceCount,
       threshold: env.alertThreshold,
       cooldownHours: env.alertCooldownHours,
       minScoreDelta: env.alertMinScoreDelta,
+      criticalMultiplier: env.alertCriticalMultiplier,
+      minUniqueSourceCount: env.alertMinUniqueSources,
       nowIso: windowEnd
     });
 

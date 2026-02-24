@@ -316,11 +316,23 @@ export class RuntimeRepository {
     repoId,
     sentTo,
     score,
+    uniqueSourceCount,
     threshold,
     cooldownHours,
     minScoreDelta = 0,
+    criticalMultiplier = 2,
+    minUniqueSourceCount = 1,
     nowIso
   }) {
+    if (Number(uniqueSourceCount) < Number(minUniqueSourceCount)) {
+      return {
+        shouldSend: false,
+        critical: false,
+        reason: 'insufficient_unique_sources',
+        lastAlert: null
+      };
+    }
+
     if (score < threshold) {
       return {
         shouldSend: false,
@@ -363,7 +375,7 @@ export class RuntimeRepository {
       };
     }
 
-    if (score >= lastAlertScore * 2) {
+    if (score >= lastAlertScore * criticalMultiplier) {
       return {
         shouldSend: true,
         critical: true,
