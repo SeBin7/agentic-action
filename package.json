@@ -8,6 +8,7 @@
   },
   "scripts": {
     "start": "node src/index.js",
+    "test": "npm run test:*",
     "test:extract": "node --test tests/extract_repo.test.js",
     "test:score": "node --test tests/score.test.js",
     "test:pipeline": "node --test tests/pipeline.test.js",
