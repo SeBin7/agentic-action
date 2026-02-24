@@ -39,9 +39,12 @@ test('cooldown blocks alert unless score doubles', () => {
     repoId: 'openai/openai-node',
     sentTo: 'discord',
     score: 13,
+    uniqueSourceCount: 2,
     threshold: 12,
     cooldownHours: 24,
     minScoreDelta: 0.5,
+    criticalMultiplier: 2,
+    minUniqueSourceCount: 1,
     nowIso: '2026-02-23T12:00:00.000Z'
   });
   assert.equal(regularDecision.shouldSend, false);
@@ -51,9 +54,12 @@ test('cooldown blocks alert unless score doubles', () => {
     repoId: 'openai/openai-node',
     sentTo: 'discord',
     score: 24,
+    uniqueSourceCount: 2,
     threshold: 12,
     cooldownHours: 24,
     minScoreDelta: 0.5,
+    criticalMultiplier: 2,
+    minUniqueSourceCount: 1,
     nowIso: '2026-02-23T12:00:00.000Z'
   });
   assert.equal(criticalDecision.shouldSend, true);
@@ -63,9 +69,12 @@ test('cooldown blocks alert unless score doubles', () => {
     repoId: 'openai/openai-node',
     sentTo: 'discord',
     score: 12.3,
+    uniqueSourceCount: 2,
     threshold: 12,
     cooldownHours: 24,
     minScoreDelta: 0.5,
+    criticalMultiplier: 2,
+    minUniqueSourceCount: 1,
     nowIso: '2026-02-24T01:00:00.000Z'
   });
   assert.equal(smallDeltaDecision.shouldSend, false);
@@ -75,9 +84,12 @@ test('cooldown blocks alert unless score doubles', () => {
     repoId: 'openai/openai-node',
     sentTo: 'discord',
     score: 13,
+    uniqueSourceCount: 2,
     threshold: 12,
     cooldownHours: 24,
     minScoreDelta: 0.5,
+    criticalMultiplier: 2,
+    minUniqueSourceCount: 1,
     nowIso: '2026-02-24T01:00:00.000Z'
   });
   assert.equal(elapsedDecision.shouldSend, true);
@@ -113,4 +125,27 @@ test('dry-run pipeline produces snapshots and alerts', async () => {
   const alertCount = countRows(dbPath, 'alerts_sent');
   assert.equal(snapshotCount >= 3, true);
   assert.equal(alertCount >= 1, true);
+});
+
+test('minimum unique source rule blocks alert', () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'trend-oss-db-'));
+  const dbPath = path.join(dir, 'runtime_db.json');
+  const repo = new RuntimeRepository({ dbPath, logger: null });
+
+  const decision = repo.shouldSendAlert({
+    repoId: 'openai/openai-node',
+    sentTo: 'discord',
+    score: 20,
+    uniqueSourceCount: 1,
+    threshold: 12,
+    cooldownHours: 24,
+    minScoreDelta: 0.5,
+    criticalMultiplier: 2,
+    minUniqueSourceCount: 2,
+    nowIso: '2026-02-24T01:00:00.000Z'
+  });
+
+  assert.equal(decision.shouldSend, false);
+  assert.equal(decision.reason, 'insufficient_unique_sources');
+  repo.close();
 });

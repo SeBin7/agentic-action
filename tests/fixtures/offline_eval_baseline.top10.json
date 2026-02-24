@@ -1,0 +1,14 @@
+{
+  "top10": [
+    "vercel/next.js",
+    "openai/openai-node",
+    "facebook/react",
+    "denoland/deno",
+    "vitejs/vite",
+    "rust-lang/rust",
+    "golang/go",
+    "microsoft/vscode",
+    "kubernetes/kubernetes",
+    "apache/kafka"
+  ]
+}

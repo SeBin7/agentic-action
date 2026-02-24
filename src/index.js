@@ -1,5 +1,6 @@
 import { loadEnv } from './config/env.js';
 import { getSourceConfig } from './config/sources.js';
+import { loadScoreRules } from './config/score_rules.js';
 import { createLogger } from './utils/logger.js';
 import { RuntimeRepository } from './db/repository.js';
 import { collectHackerNews } from './collectors/hackernews.js';
@@ -53,14 +54,21 @@ export async function runPipeline({
   fetchImpl = fetch,
   now = () => new Date()
 } = {}) {
-  const env = loadEnv({ env: { ...process.env, ...envOverrides } });
+  const runtimeEnv = { ...process.env, ...envOverrides };
+  const env = loadEnv({ env: runtimeEnv });
   const logger = createLogger({ logPath: env.logPath, now });
   const repo = new RuntimeRepository({ dbPath: env.dbPath, logger });
   const sourceConfig = getSourceConfig(env);
   const httpOptions = buildHttpOptions(env);
+  const scoreRulesResult = loadScoreRules({ env: runtimeEnv });
 
   const nowIso = asIsoNow(now);
   logger.info('pipeline.start', { dryRun, nowIso });
+  logger.info('score.rules.loaded', {
+    source: scoreRulesResult.source,
+    path: scoreRulesResult.path,
+    fallback: Boolean(scoreRulesResult.error)
+  });
 
   if (env.sourceReenableOnStart) {
     const reenabled = repo.reenableDisabledSources({ nowIso });
@@ -212,7 +220,7 @@ export async function runPipeline({
       uniqueSourceCount,
       starDelta,
       tierCMentionCount
-    });
+    }, scoreRulesResult.rules);
 
     repo.insertScoreSnapshot({
       repo_id: repoId,
@@ -236,9 +244,12 @@ export async function runPipeline({
       repoId,
       sentTo: 'discord',
       score: scoreResult.score,
+      uniqueSourceCount,
       threshold: env.alertThreshold,
       cooldownHours: env.alertCooldownHours,
       minScoreDelta: env.alertMinScoreDelta,
+      criticalMultiplier: env.alertCriticalMultiplier,
+      minUniqueSourceCount: env.alertMinUniqueSources,
       nowIso: windowEnd
     });
 
