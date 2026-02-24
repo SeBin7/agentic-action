@@ -63,3 +63,4 @@
 ## 실사용 제출 인터페이스
 수동 파일 작성 대신 아래 도구를 사용 가능:
 - `tools/bridge/submit_work.py --to gemini --thread-id <id> "<지시문>" --run-once --wait`
+- `to: gemini` 제출 시 `codex_assign` 기본값은 `@직원2`

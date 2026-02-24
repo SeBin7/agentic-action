@@ -146,6 +146,9 @@ def main() -> int:
     parser.add_argument("--thread-id", default="manual")
     parser.add_argument("--task-id", default="")
     parser.add_argument("--assign", default="")
+    parser.add_argument("--codex-assign", default="", help="to=gemini일 때 후속 codex assign")
+    parser.add_argument("--codex-timeout-s", type=int, default=0, help="to=gemini일 때 후속 codex timeout_s")
+    parser.add_argument("--codex-max-retries", type=int, default=0, help="to=gemini일 때 후속 codex max_retries")
     parser.add_argument("--priority", default="high")
     parser.add_argument("--timeout-s", type=int, default=240)
     parser.add_argument("--max-retries", type=int, default=3)
@@ -196,6 +199,13 @@ def main() -> int:
         "response_lang": args.response_lang,
         "created_at": now_utc_iso(),
     }
+    if args.to == "gemini":
+        meta["codex_assign"] = args.codex_assign.strip() or "@직원2"
+        if args.codex_timeout_s > 0:
+            meta["codex_timeout_s"] = int(args.codex_timeout_s)
+        if args.codex_max_retries > 0:
+            meta["codex_max_retries"] = int(args.codex_max_retries)
+
     body = build_body(args.to, text, args.notes or None)
     work_path = unique_inbox_path(dirs["inbox"], thread_id, task_id, args.to)
     write_text(work_path, render_markdown(meta, body))
@@ -231,4 +241,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

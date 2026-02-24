@@ -35,6 +35,7 @@ export BRIDGE_REQUIRE_GEMINI=1
 ```bash
 tools/bridge/submit_work.py --to gemini --thread-id live "요청 문장" --run-once --wait
 ```
+기본 후속 Codex 담당은 `@직원2`이며, 필요 시 `--codex-assign`으로 변경할 수 있다.
 
 ## 3) 실행
 단발:
