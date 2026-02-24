@@ -1,0 +1,86 @@
+[
+  {
+    "repoId": "openai/openai-node",
+    "mentionCount": 6,
+    "uniqueSourceCount": 3,
+    "starDelta": 120,
+    "tierCMentionCount": 0
+  },
+  {
+    "repoId": "vercel/next.js",
+    "mentionCount": 8,
+    "uniqueSourceCount": 3,
+    "starDelta": 90,
+    "tierCMentionCount": 0
+  },
+  {
+    "repoId": "denoland/deno",
+    "mentionCount": 5,
+    "uniqueSourceCount": 2,
+    "starDelta": 40,
+    "tierCMentionCount": 1
+  },
+  {
+    "repoId": "rust-lang/rust",
+    "mentionCount": 4,
+    "uniqueSourceCount": 2,
+    "starDelta": 20,
+    "tierCMentionCount": 0
+  },
+  {
+    "repoId": "microsoft/vscode",
+    "mentionCount": 3,
+    "uniqueSourceCount": 2,
+    "starDelta": 12,
+    "tierCMentionCount": 0
+  },
+  {
+    "repoId": "facebook/react",
+    "mentionCount": 7,
+    "uniqueSourceCount": 2,
+    "starDelta": 8,
+    "tierCMentionCount": 2
+  },
+  {
+    "repoId": "kubernetes/kubernetes",
+    "mentionCount": 2,
+    "uniqueSourceCount": 2,
+    "starDelta": 30,
+    "tierCMentionCount": 0
+  },
+  {
+    "repoId": "vitejs/vite",
+    "mentionCount": 5,
+    "uniqueSourceCount": 2,
+    "starDelta": 18,
+    "tierCMentionCount": 0
+  },
+  {
+    "repoId": "sveltejs/svelte",
+    "mentionCount": 2,
+    "uniqueSourceCount": 1,
+    "starDelta": 22,
+    "tierCMentionCount": 0
+  },
+  {
+    "repoId": "angular/angular",
+    "mentionCount": 1,
+    "uniqueSourceCount": 1,
+    "starDelta": 15,
+    "tierCMentionCount": 0
+  },
+  {
+    "repoId": "apache/kafka",
+    "mentionCount": 4,
+    "uniqueSourceCount": 1,
+    "starDelta": 10,
+    "tierCMentionCount": 1
+  },
+  {
+    "repoId": "golang/go",
+    "mentionCount": 3,
+    "uniqueSourceCount": 2,
+    "starDelta": 16,
+    "tierCMentionCount": 0
+  }
+]

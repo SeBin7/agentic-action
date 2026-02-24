@@ -1,9 +1,4 @@
-const WEIGHTS = {
-  mention: 1.0,
-  uniqueSource: 5.0,
-  starDelta: 2.0,
-  tierCPenalty: 0.5
-};
+import { DEFAULT_SCORE_RULES, normalizeScoreRules } from '../config/score_rules.js';
 
 function round1(value) {
   return Math.round(value * 10) / 10;
@@ -14,16 +9,17 @@ export function calculateScoreV1({
   uniqueSourceCount,
   starDelta,
   tierCMentionCount = 0
-}) {
+}, rules = DEFAULT_SCORE_RULES) {
+  const activeRules = normalizeScoreRules(rules);
   const safeMention = Math.max(0, mentionCount);
   const safeUniqueSource = Math.max(0, uniqueSourceCount);
   const safeDelta = Math.max(0, starDelta);
   const safeTierC = Math.max(0, tierCMentionCount);
 
-  const weightedMentionCount = safeMention - safeTierC + safeTierC * WEIGHTS.tierCPenalty;
-  const mentionScore = WEIGHTS.mention * weightedMentionCount;
-  const uniqueSourceScore = WEIGHTS.uniqueSource * safeUniqueSource;
-  const starDeltaScore = WEIGHTS.starDelta * Math.log10(safeDelta + 1);
+  const weightedMentionCount = safeMention - safeTierC + safeTierC * activeRules.tierCPenalty;
+  const mentionScore = activeRules.mention * weightedMentionCount;
+  const uniqueSourceScore = activeRules.uniqueSource * safeUniqueSource;
+  const starDeltaScore = activeRules.starDelta * Math.log10(safeDelta + 1);
 
   const rawScore = mentionScore + uniqueSourceScore + starDeltaScore;
 

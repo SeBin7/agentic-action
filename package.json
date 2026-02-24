@@ -11,9 +11,11 @@
     "test": "npm run test:*",
     "test:extract": "node --test tests/extract_repo.test.js",
     "test:score": "node --test tests/score.test.js",
+    "test:score-rules": "node --test tests/score_rules.test.js",
     "test:pipeline": "node --test tests/pipeline.test.js",
     "test:health": "node --test tests/source_health.test.js",
     "test:sources": "node --test tests/sources_config.test.js",
-    "test:*": "npm run test:extract && npm run test:score && npm run test:pipeline && npm run test:health && npm run test:sources"
+    "eval:score": "node tools/eval/offline_score_eval.js",
+    "test:*": "npm run test:extract && npm run test:score && npm run test:score-rules && npm run test:pipeline && npm run test:health && npm run test:sources && npm run eval:score"
   }
 }
